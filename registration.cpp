@@ -81,7 +81,7 @@ unsigned long long Reg :: toBase()
 	mysql_query(connection, query);
 	res = mysql_store_result(connection);
 	if (row = mysql_fetch_row( res )){
-		sprintf(query,"INSERT INTO user_marks(user_id) VALUES('%s')",row[0], 100, 100, 1, 100,2,100,3,100);
+		sprintf(query,"INSERT INTO user_marks(user_id) VALUES('%s')",row[0]);
 		mysql_query(connection, query);
 	}
 	mysql_free_result(res);
