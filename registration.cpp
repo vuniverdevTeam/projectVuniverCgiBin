@@ -160,7 +160,8 @@ int main()
    fprintf(sendmail,"Subject: Registration\n");
 	 fprintf(sendmail,"Content-Type: text/html; charset=\"utf8\"\n");
 	 fprintf(sendmail,"\n<br/>Доброго дня,<br/>");
-	 fprintf(sendmail,"При реєстрації на сайті <a href=\"http://alex.inet-tech.org.ua/project%20ISM/\">VUNIVER</a> було вказано вагу адресу. Щоб завершити реєстрацію й перейти до вашого кабінету натисніть на посилання нижче: <br/>");
+	 fprintf(sendmail,"При реєстрації на сайті <a href=\"http://alex.inet-tech.org.ua/project%20ISM/\">VUNIVER</a> було вказано вагу адресу. Щоб завершити реєстрацію й перейти до вашого кабінету натисніть на посилання нижче:<br/>");
+	 fprintf(sendmail,"<br/><p>Your link http://alex.inet-tech.org.ua/project%20ISM/cabinet.html?confirm=%llu\n</p>", ID);
 	 fprintf(sendmail,"<br/>Якщо ви не реєструвались на сайті <a href=\"http://alex.inet-tech.org.ua/project%20ISM/\">VUNIVER</a> можете проігнорувати цей лист.\n");
    fprintf(sendmail,".\n");
  pclose(sendmail);
