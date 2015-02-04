@@ -74,11 +74,17 @@ void Reg :: toCount()
 
 unsigned long long Reg :: toBase()
 {
-	sprintf(query,"INSERT INTO user_marks(certificate,mark_1,subject_2,mark_2,subject_3,mark_3,subject_4,mark_4) VALUES('%d','%d','%d','%d','%d','%d','%d','%d')",100, 100, 1, 100,2,100,3,100);
-	mysql_query(connection, query);
 	unsigned long long ID = generateID(arr[0].value);
 	sprintf(query,"INSERT INTO users(mail, password, session_id, session_end) values('%s', '%s', '%llu', '%llu')", arr[0].value, arr[1].value, (unsigned long long)ID, (unsigned long long)time(0) + SESSION_LENGHT);
 	mysql_query(connection, query);
+	sprintf(query,"SELECT user_id FORM users WHERE mail='%s'", arr[0].value);
+	mysql_query(connection, query);
+	res = mysql_store_result(connection);
+	if (row = mysql_fetch_row( res )){
+		sprintf(query,"INSERT INTO user_marks(user_id) VALUES('%s')",row[0], 100, 100, 1, 100,2,100,3,100);
+		mysql_query(connection, query);
+	}
+	mysql_free_result(res);
 	switch(count)
 	{
 	case 2:
