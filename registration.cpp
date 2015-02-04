@@ -1,4 +1,4 @@
-﻿#include <iostream>
+#include <iostream>
 #include <string.h>
 #include <fstream>
 #include <stdlib.h>
@@ -77,7 +77,7 @@ unsigned long long Reg :: toBase()
 	unsigned long long ID = generateID(arr[0].value);
 	sprintf(query,"INSERT INTO users(mail, password, session_id, session_end) values('%s', '%s', '%llu', '%llu')", arr[0].value, arr[1].value, (unsigned long long)ID, (unsigned long long)time(0) + SESSION_LENGHT);
 	mysql_query(connection, query);
-	sprintf(query,"SELECT user_id FORM users WHERE mail='%s'", arr[0].value);
+	sprintf(query,"SELECT user_id FROM users WHERE mail='%s'", arr[0].value);
 	mysql_query(connection, query);
 	res = mysql_store_result(connection);
 	if (row = mysql_fetch_row( res )){
@@ -85,21 +85,6 @@ unsigned long long Reg :: toBase()
 		mysql_query(connection, query);
 	}
 	mysql_free_result(res);
-	switch(count)
-	{
-	case 2:
-		sprintf(query,
-		"INSERT INTO user_marks(certificate,mark_1,subject_2,mark_2,subject_3,mark_3,subject_4,mark_4) VALUES('%s','%s','%s','%s','-1','-1','-1','-1')",arr[11].value, arr[4].value, arr[5].value, arr[6].value);
-		break;
-	case 1:
-		sprintf(query,
-		"INSERT INTO user_marks(certificate,mark_1,subject_2,mark_2,subject_3,mark_3,subject_4,mark_4) VALUES('%s','%s','%s','%s','%s','%s','-1','-1')",arr[11].value, arr[4].value, arr[5].value, arr[6].value, arr[7].value, arr[8].value);
-		break;
-	case 0:
-		sprintf(query,
-		"INSERT INTO user_marks(certificate,mark_1,subject_2,mark_2,subject_3,mark_3,subject_4,mark_4) VALUES('%s','%s','%s','%s','%s','%s','%s','%s')",arr[11].value, arr[4].value, arr[5].value, arr[6].value, arr[7].value, arr[8].value, arr[9].value, arr[10].value);
-		break;
-	}
 	//mysql_query(connection, query);
 	return ID;
 }
@@ -175,3 +160,4 @@ int main()
 	cout<<"Location: http://alex.inet-tech.org.ua/project ISM/success.html\r\n\r\n"<<endl;
   return 0;
 }
+
