@@ -48,10 +48,25 @@ protected:
 	int count;
 public:
 	void read();
+	void readPost();
 	unsigned long long toBase();
 	void toCount();
 	void convert();
+	bool isExist();
 };
+
+bool Reg :: isExist()
+{
+	sprintf(query,"SELECT user_id FROM users WHERE mail = '%s'", arr[0].value);
+	mysql_query(connection, query);
+	res = mysql_store_result(connection);
+	row = mysql_fetch_row(res);
+	if(row[0] > 0)
+	{
+		return true;
+	}
+	else return false;
+}
 
 void Reg :: convert()
 {
@@ -124,6 +139,38 @@ void Reg ::  read()
 }
 
 
+void Reg :: readPost()
+{
+	char buff[200];
+  short i, j = 0;
+  long content_length=atol(getenv("CONTENT_LENGTH"));
+  if(content_length > 0 && content_length < 1001)
+    fread(buff,content_length,1,stdin);
+  else return;
+  buff[content_length] = 0;
+  for(char* ptr=buff; *ptr != 0; ptr++){
+    for(i = 0; ptr[i] != 0; i++)
+      if(ptr[i] == '='){
+        ptr[i] = 0;
+        arr[j].name = new char[i+1];
+        strcpy(arr[j].name, ptr);
+        ptr += i+1;
+        break;
+      } //write name
+      for(i = 0; true; i++)
+        if(ptr[i] == '&' || ptr[i] == 0){
+          ptr[i] = 0;
+          arr[j].value = new char[i+1];
+          strcpy(arr[j++].value, ptr);
+          ptr += i;
+          break;
+        }//write value
+        if(j == FORM_SIZE)return;
+  }
+}
+
+
+
 int main()
 {
   //cout << "Content-type:text/html\r\n\r\n" << endl;
@@ -135,7 +182,13 @@ int main()
   Reg obj;
   obj.read();
   //obj.toCount();
-  unsigned long long ID = obj.toBase();
+ try
+ {
+  if(obj.isExist())
+  {
+	  throw exception();
+  }
+	  unsigned long long ID = obj.toBase();
   obj.convert();
 
 	char *pt;
@@ -158,6 +211,13 @@ int main()
  pclose(sendmail);
 
 	cout<<"Location: http://alex.inet-tech.org.ua/project ISM/success.html\r\n\r\n"<<endl;
+	}
+ catch(exception& e)
+ {
+	 cout <<"Access-Control-Allow-Origin: *\r\n\r\n";
+	 cout << "This mail is already taken" << endl;
+ }
   return 0;
 }
+
 
