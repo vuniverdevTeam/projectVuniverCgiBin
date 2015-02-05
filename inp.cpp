@@ -1,4 +1,4 @@
-﻿#include <iostream>
+#include <iostream>
 #include <string.h>
 #include <fstream>
 #include <stdlib.h>
@@ -60,6 +60,8 @@ float erf(float t) {
 	MYSQL_RES *result;
 	char str[44];
 	float r;
+	if(t>4) t=4;
+	else if(t<-4) t=-4;
 	sprintf(str, "SELECT ft FROM laplas WHERE t='%f'", t<0 ? (-t) : t);
 	mysql_query(connection, str);
 	result = mysql_store_result(connection);
@@ -86,7 +88,7 @@ double Probability(int* markArr, double &D, double &M)
 	D /= (YEARS - 1);
 
 	D = sqrt(double(2.0) * D);
-	X = (erf((M - 100) / D) - erf((M - rating) / D)) * 50;
+	X = (erf((double(M) - double(100)) / D) - erf((double(M) - double(rating)) / D)) * 50;
 
 	return X;
 }
@@ -713,4 +715,5 @@ int main()
 	obj.Controller("../project ISM/input.html");
 	return 0;
 }
+
 
