@@ -124,16 +124,18 @@ double Beta(double x, double y) {
 	return(exp(GammLn(x)+GammLn(y)-GammLn(x+y)));
 }
 
-double b(double* markArr, double rating)
+double b(double* arr, double rating)
 {
 	double alpha, beta;
 	double B, F, x, y, function;
 	double M = 0, D = 0;
+	double markArr[YEARS];
 	int	i;
 	int sum = 0;
-	const int count = 25000;
+	const int count = 24000;
 
 	for (i = 0; i < YEARS; ++i) {
+		markArr[i] = arr[i];
 		markArr[i] -= 100;
 		markArr[i] /= 100;
 	}
@@ -147,17 +149,17 @@ double b(double* markArr, double rating)
 	for (i = 0; i < YEARS; ++i) {
 		D += pow(markArr[i] - M, 2.0);
 	}
-	D /= YEARS - 1;
+	D /= (YEARS - 1);
 
 	alpha = M * (((M * (1 - M)) / D) - 1);
 	beta = (1 - M) * (((M * (1 - M)) / D) - 1);
 
 	B = Beta(alpha, beta);
 
-	if (alpha < 1 || beta < 1) {
+	/*if (alpha < 1 || beta < 1) {
 		cout<<"error";
 		return 0;
-	}
+	}*/
 	double x_moda = alpha - 1;
 	x_moda /= (alpha + beta - 2);
 	function = (1 / B) * pow(x_moda, alpha - 1);
@@ -715,5 +717,4 @@ int main()
 	obj.Controller("../project ISM/input.html");
 	return 0;
 }
-
 
