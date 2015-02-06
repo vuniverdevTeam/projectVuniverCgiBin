@@ -61,10 +61,9 @@ bool Reg :: isExist()
 	mysql_query(connection, query);
 	res = mysql_store_result(connection);
 	row = mysql_fetch_row(res);
-	if(row[0] > 0)
-	{
+	int amount = mysql_num_rows(res);
+	if(amount > 0)
 		return true;
-	}
 	else return false;
 }
 
@@ -89,6 +88,7 @@ void Reg :: toCount()
 
 unsigned long long Reg :: toBase()
 {
+
 	unsigned long long ID = generateID(arr[0].value);
 	sprintf(query,"INSERT INTO users(mail, password, session_id, session_end) values('%s', '%s', '%llu', '%llu')", arr[0].value, arr[1].value, (unsigned long long)ID, (unsigned long long)time(0) + SESSION_LENGHT);
 	mysql_query(connection, query);
@@ -180,16 +180,17 @@ int main()
     "vuniver","5S1CQhvO","vuniver",3306,0,0);
   mysql_query(connection, "SET NAMES utf8 COLLATE utf8_unicode_ci");
   Reg obj;
-  obj.read();
+  obj.readPost();
   //obj.toCount();
- try
- {
-  if(obj.isExist())
+
+  
+  try
   {
-	  throw exception();
-  }
+	  if(obj.isExist())
+		  throw exception();
+
 	  unsigned long long ID = obj.toBase();
-  obj.convert();
+      obj.convert();
 
 	char *pt;
 	for(pt = arr[0].value; *pt; pt++)
@@ -209,14 +210,14 @@ int main()
 	 fprintf(sendmail,"Якщо ви не реєструвались на сайті <a href=\"http://alex.inet-tech.org.ua/project%20ISM/\">VUNIVER</a> можете проігнорувати цей лист.\n");
    fprintf(sendmail,".\n");
  pclose(sendmail);
-
+	
 	cout<<"Location: http://alex.inet-tech.org.ua/project ISM/success.html\r\n\r\n"<<endl;
-	}
- catch(exception& e)
- {
-	 cout <<"Access-Control-Allow-Origin: *\r\n\r\n";
-	 cout << "This mail is already taken" << endl;
- }
+  }
+  catch(exception & e)
+  {
+	  cout <<"Access-Control-Allow-Origin: *\r\n\r\n";
+	  cout << "228" << endl;
+  }
   return 0;
 }
 
