@@ -44,10 +44,14 @@ void Response ::  answer()
 	mysql_query(connection,query);
 	res = mysql_store_result(connection);
 	row = mysql_fetch_row(res);
-	for(short i = 1; i<9; i++)
+//cout<<"{ marks : ['"<< en("mark5")<<"', '"<< en("mark1")<<"', '"<< en("mark2")<<"', '"<< en("mark3")<<"', '"<< en("mark4")<<"']";
+//cout<<", subjs : ['1', '"<< en("sub2")<<"', '"<< en("sub3")<<"', '"<< en("sub4")<<"']";
+	cout<<"{ marks : ['"<< row[1]<<"', '"<< row[2]<<"', '"<< row[4]<<"', '"<< row[6]<<"', '"<< row[8]<<"']";
+	cout<<", subjs : ['1', '"<< row[3]<<"', '"<< row[5]<<"', '"<< row[7]<<"']}";	
+/*for(short i = 1; i<9; i++)
 	{
 		cout << row[i] << '~';
-	}
+	}*/
 }
 
 void Response :: readPost()
