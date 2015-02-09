@@ -88,7 +88,7 @@ double Probability(int* markArr, double &D, double &M)
 	D /= (YEARS - 1);
 
 	D = sqrt(double(2.0) * D);
-	X = (erf((double(M) - double(100)) / D) - erf((double(M) - double(rating)) / D)) * 50;
+	X = (erf((double(M) - double(100)) / D) - erf((double(M) - double(rating)*1.12) / D)) * 50;
 
 	return X;
 }
@@ -124,16 +124,18 @@ double Beta(double x, double y) {
 	return(exp(GammLn(x)+GammLn(y)-GammLn(x+y)));
 }
 
-double b(double* markArr, double rating)
+double b(int* arr, double rating)
 {
 	double alpha, beta;
 	double B, F, x, y, function;
 	double M = 0, D = 0;
+	double markArr[YEARS];
 	int	i;
 	int sum = 0;
-	const int count = 25000;
+	const int count = 24000;
 
 	for (i = 0; i < YEARS; ++i) {
+		markArr[i] = arr[i];
 		markArr[i] -= 100;
 		markArr[i] /= 100;
 	}
@@ -147,17 +149,20 @@ double b(double* markArr, double rating)
 	for (i = 0; i < YEARS; ++i) {
 		D += pow(markArr[i] - M, 2.0);
 	}
-	D /= YEARS - 1;
+	D /= (YEARS - 1);
 
 	alpha = M * (((M * (1 - M)) / D) - 1);
 	beta = (1 - M) * (((M * (1 - M)) / D) - 1);
 
+	if (alpha < 1) alpha = 1;
+	if (beta < 1) beta = 1;
+
 	B = Beta(alpha, beta);
 
-	if (alpha < 1 || beta < 1) {
+	/*if (alpha < 1 || beta < 1) {
 		cout<<"error";
 		return 0;
-	}
+	}*/
 	double x_moda = alpha - 1;
 	x_moda /= (alpha + beta - 2);
 	function = (1 / B) * pow(x_moda, alpha - 1);
@@ -237,7 +242,6 @@ short SQL :: searchMarkUFS(const char *u, const char *f, const char *s, int *arr
 	if (row = mysql_fetch_row( res ))
 		a = atoi(row[0]);
 	mysql_free_result(res); 
-	//cout<<a<<" u<br/>"<<endl;
 
 	sprintf(query_ptr, "SELECT f_id FROM faculties WHERE u_id='%s' AND f_id='%s'", ito(a, tmp1), f);
 	mysql_query(connection, query_ptr);
@@ -247,7 +251,6 @@ short SQL :: searchMarkUFS(const char *u, const char *f, const char *s, int *arr
 	if (row = mysql_fetch_row( res ))
 		b = atoi(row[0]);
 	mysql_free_result(res);
-	//cout<<b<<" f<br/>"<<endl;
 
 	sprintf(query_ptr, "SELECT s_id FROM specialities WHERE s_id='%s'", s);
 	query_state = mysql_query(connection, query_ptr);
@@ -258,7 +261,6 @@ short SQL :: searchMarkUFS(const char *u, const char *f, const char *s, int *arr
 		a = atoi(row[0]);
 	}
 	mysql_free_result(res); 
-	//cout<<a<<" s<br/>"<<endl;
 
 	sprintf(query_ptr, "SELECT avg_contract_mark, avg_budget_mark FROM facult_spec WHERE s_id='%s' AND f_id='%s'", ito(a,tmp1), ito(b,tmp2));
 	query_state = mysql_query(connection, query_ptr);
@@ -468,7 +470,7 @@ void Template :: Model(int dec)
 		cout.setf(ios::fixed);
 		cout.precision(1);
 		if(row[0][0] == '0') cout<<Probability(arr, M, D)<<"%"<<endl;
-		else cout<<b((double*)arr, rating)<<"%"<<endl;
+		else cout<<b(arr, rating)<<"%"<<endl;
 		//cout<<"M: "<<M<<"<br/>"<<endl;
 		//cout<<"D: "<<D<<endl;
 		break;
@@ -481,7 +483,7 @@ void Template :: Model(int dec)
 		cout.setf(ios::fixed);
 		cout.precision(1);
 		if(row[0][0] == '0') cout<<Probability(arr+YEARS, M, D)<<"%"<<endl;
-		else cout<<b((double*)(arr+YEARS), rating)<<"%"<<endl;
+		else cout<<b((arr+YEARS), rating)<<"%"<<endl;
 		//cout<<"M: "<<M<<"<br/>"<<endl;
 		//cout<<"D: "<<D<<endl;
 		break;
@@ -715,5 +717,4 @@ int main()
 	obj.Controller("../project ISM/input.html");
 	return 0;
 }
-
 
