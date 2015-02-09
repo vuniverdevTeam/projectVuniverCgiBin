@@ -67,11 +67,11 @@ bool Reg :: isExist()
 	else return false;
 }
 
-void Reg :: convert()
+/*void Reg :: convert()
 {
 	strcpy(query, " UPDATE `users` SET `mail`= REPLACE(`mail`, '%40', '@')");
 	mysql_query(connection, query);
-}
+}*/
 
 void Reg :: toCount()
 {
@@ -190,24 +190,18 @@ int main()
 		  throw exception();
 
 	  unsigned long long ID = obj.toBase();
-      obj.convert();
-
-	char *pt;
-	for(pt = arr[0].value; *pt; pt++)
-		if(*pt == '%' && *(pt+1) == '4' && *(pt+2) == '0') break;
-	*pt = '\0';
-	pt += 3;
+    //obj.convert();
 
 	FILE *sendmail; 
  sendmail=popen("/usr/lib/sendmail -t","w");
-   fprintf(sendmail,"To: %s@%s\n", arr[0].value, pt);
+   fprintf(sendmail,"To: %s\n", arr[0].value);
    fprintf(sendmail,"From: alex@inet-tech.org.ua\n");
    fprintf(sendmail,"Subject: Registration\n");
 	 fprintf(sendmail,"Content-Type: text/html; charset=\"utf8\"\n");
 	 fprintf(sendmail,"\n<br/>Доброго дня,<br/>");
-	 fprintf(sendmail,"При реєстрації на сайті <a href=\"http://alex.inet-tech.org.ua/project%20ISM/\">VUNIVER</a> було вказано вагу адресу. Щоб завершити реєстрацію й перейти до вашого кабінету натисніть на посилання нижче:<br/>");
+	 fprintf(sendmail,"При реєстрації на сайті <a href=\"http://alex.inet-tech.org.ua/project%20ISM/\">VUNIVER</a> було вказано вашу адресу. Щоб завершити реєстрацію й перейти до вашого кабінету, натисніть на одноразове посилання нижче:<br/>");
 	 fprintf(sendmail,"<p>http://alex.inet-tech.org.ua/project%20ISM/cabinet.html?confirm=%llu\n</p>", ID);
-	 fprintf(sendmail,"Якщо ви не реєструвались на сайті <a href=\"http://alex.inet-tech.org.ua/project%20ISM/\">VUNIVER</a> можете проігнорувати цей лист.\n");
+	 fprintf(sendmail,"Якщо ви не реєструвались на сайті <a href=\"http://alex.inet-tech.org.ua/project%20ISM/\">VUNIVER</a>, можете проігнорувати цей лист.\n");
    fprintf(sendmail,".\n");
  pclose(sendmail);
 	
@@ -220,5 +214,4 @@ int main()
   }
   return 0;
 }
-
 
