@@ -142,18 +142,21 @@ void Template :: Controller()
   else ReadPost();
   //cout <<"Content-Type: text/html\r\n\r\n";
   if(en("confirm") && en("confirm")[0] && en("confirm")[0] != '0') {
-    sprintf(buff, "SELECT session_end, mail, user_id FROM users WHERE session_id='%s'", en("confirm"));
+    sprintf(buff, "SELECT session_end, user_id, is_active FROM users WHERE session_id='%s'", en("confirm"));
     mysql_query(connection, buff);
     res = mysql_store_result(connection);
     row = mysql_fetch_row( res );
-		if(time(0) < atoi(row[0])){
-				mysql_free_result(res);
-				sprintf(buff, "UPDATE users SET is_active=1,session_end=%llu WHERE session_id='%s'", (unsigned long long)time(0) + SESSION_LENGHT, en("confirm"));
-				mysql_query(connection, buff);
-				cout<<"All right";
-				return;
+		if(row[2][0] == '0') {
+			if(time(0) < atoi(row[0])){
+					unsigned long long ID = generateID(row[1]);
+					sprintf(buff, "UPDATE users SET is_active=1, session_id='%llu', session_end='%llu' WHERE user_id='%s'", (unsigned long long)ID, (unsigned long long)time(0) + SESSION_LENGHT, row[1]);
+					//mysql_free_result(res);
+					mysql_query(connection, buff);
+					cout<<"auth="<<ID;
+					return;
+			}
+			cout<<"Late";
 		}
-		cout<<"Late";
   }
   cout<<"Wrong!";
 }
