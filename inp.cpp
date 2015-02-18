@@ -88,7 +88,7 @@ double Probability(int* markArr, double &D, double &M)
 	D /= (YEARS - 1);
 
 	D = sqrt(double(2.0) * D);
-	X = (erf((double(M) - double(100)) / D) - erf((double(M) - double(rating)*1.12) / D)) * 50;
+	X = (erf((double(M) - double(100)) / D) - erf((double(M) - double(rating)/**1.12*/) / D)) * 50;
 
 	return X;
 }
@@ -149,7 +149,14 @@ double b(int* arr, double rating)
 	for (i = 0; i < YEARS; ++i) {
 		D += pow(markArr[i] - M, 2.0);
 	}
-	D /= (YEARS - 1);
+
+	if (YEARS != 1) D /= (YEARS - 1);
+
+	if (D < 1) {
+		if ((float)rating == (float)M) return 50;
+		else if (rating > M) return 100;
+		else if (rating < M) return 0;
+	}
 
 	alpha = M * (((M * (1 - M)) / D) - 1);
 	beta = (1 - M) * (((M * (1 - M)) / D) - 1);
@@ -717,4 +724,5 @@ int main()
 	obj.Controller("../project ISM/input.html");
 	return 0;
 }
+
 
