@@ -519,7 +519,7 @@ void Template :: Model(int dec)
 
 			if(*u != 0 && strcmp(u, row[0]) != 0) continue;
 
-			sprintf(str, "SELECT u_fullname, reg_id, city_id FROM university WHERE u_id='%s'", row[0]);
+			sprintf(str, "SELECT u_fullname, reg_id, city_id, rating FROM university WHERE u_id='%s'", row[0]);
 			mysql_query(connection, str);
 			res = mysql_store_result(connection);
 			row = mysql_fetch_row(res);
@@ -528,7 +528,7 @@ void Template :: Model(int dec)
 			if(*r != 0 && strcmp(r, row[1]) != 0) continue;
 			if(*c != 0 && strcmp(c, row[2]) != 0) continue;
 		
-			cout<<"<tr><td>"<<j++<<"</td>";
+			cout<<"<tr><td>"<<row[3]<<"</td>";
 			cout.setf(ios::fixed);
 			cout.precision(1);
 			cout<<"<td class=\"budg\">"<<arr[i].prop2<<"%</td> <td class=\"contr\">"<<arr[i].prop1<<"%</td>";
@@ -724,5 +724,3 @@ int main()
 	obj.Controller("../project ISM/input.html");
 	return 0;
 }
-
-
