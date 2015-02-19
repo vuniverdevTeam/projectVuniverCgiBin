@@ -551,6 +551,7 @@ void Template :: Model(int dec)
 
 			cout<<"</td>";
 	cout << "<td id = 'addFav' onclick = 'getInfo(event)'>Зберегти у кабінет</td></tr>";
+			j++;
 		}
 		if(j == 1)
 			cout<<"<tr><td colspan=\"6\" align=\"center\">"<<"Співпадінь не знайдено"<<"</td></tr>";
