@@ -338,7 +338,6 @@ protected:
 public:
 	int View();
 	void Model(int dec);
-	void ErrorModel(int dec);
 	void Controller(char* file);
 	friend class SQL;
 };
@@ -562,83 +561,6 @@ void Template :: Model(int dec)
 	default: cout << " " << endl;
 	}
 }
-void Template :: ErrorModel(int dec)
-{
-	switch(dec)
-	{
-	case 'T':
-		if(errSub)
-			cout<<"Усі вибрані предмети повинні бути різними";
-		break;
-	case '1':
-		if(errMark&MARK1)
-			cout<<"\" class=\"input-error\"><p>"<<"Бали мають бути в межах від 100 до 200";
-		else cout<<en("mark1")<<"\"><p>";
-		break;
-	case '2':
-		if(errMark&MARK2)
-			cout<<"\" class=\"input-error\"><p>"<<"Бали мають бути в межах від 100 до 200";
-		else cout<<en("mark2")<<"\"><p>";
-		break;
-	case '3':
-		if(errMark&MARK3)
-			cout<<"\" class=\"input-error\"><p>"<<"Бали мають бути в межах від 100 до 200";
-		else cout<<en("mark3")<<"\"><p>";
-		break;
-	case '4':
-		if(errMark&MARK4)
-			cout<<"\" class=\"input-error\"><p>"<<"Бали мають бути в межах від 100 до 200";
-		else cout<<en("mark4")<<"\"><p>";
-		break;
-	case '5':
-		if(errMark&MARK5)
-			cout<<"\" class=\"input-error\"><p>"<<"Бали мають бути в межах від 100 до 200</p>";
-		else cout<<en("mark5")<<"\">";
-		break;
-	case 'U':
-		if(err != 0);//cout<<en("Univer")<<"\"> </td>";
-		else cout<<"<div class=\"top-error\">Такий університет відсутній</div>"<<endl;
-		break;
-	case 'F':
-		if(err == 0)
-			cout<<""<<endl;
-		else
-			if(err != 1);//cout<<en("Fac")<<"\"> </td>";
-			else cout<<"<div class=\"top-error\">Такий факультет у вибраному університеті відсутній</div>"<<endl;
-		break;
-	case 'S':
-		if(err == 0 || err == 1)
-			cout<<""<<endl;
-		else if(err != 2 && err != 3);//cout<<en("Spec")<<"\"> </td>";
-		else {cout<<"<div class=\"top-error\">";
-			if(err == 2)cout<<"Така спеціальність відсутня";
-			else cout<<"Така спеціальність відсутня на вибраному факультеті";
-			cout<<"/div";
-		}
-		break;
-	case 'u':
-		if(err != 0);//cout<<en("Univer")<<"\"> </td>";
-		else cout<<"<div class=\"top-error\"></div>"<<"<div class=\"top-error\"></div>"<<endl;
-		break;
-	case 'f':
-		if(err == 0)
-			cout<<""<<endl;
-		else
-			if(err != 1);//cout<<en("Fac")<<"\"> </td>";
-			else cout<<"<div class=\"top-error\"></div>"<<"<div class=\"top-error\"></div>"<<endl;
-		break;
-	case 's':
-		if(err == 0 || err == 1)
-			cout<<""<<endl;
-		else if(err != 2 && err != 3);//cout<<en("Spec")<<"\"> </td>";
-		else {cout<<"<div class=\"top-error\">";
-					cout<<"<div class=\"top-error\"></div>"<<"/div";
-		}
-		break;
-	default:
-		cout<<"";
-	}
-}
 
 void Template :: Controller(char* file)
 {
@@ -688,6 +610,14 @@ void Template :: Controller(char* file)
 	}
 	else{
 		fin.open("../project ISM/back.html");
+		if(!fin.is_open())return;
+		cout <<"Content-Type: text/html\r\n\r\n";
+		while(!fin.eof())
+		{
+			fin.getline(buff, 1000);
+			cout<<buff<<endl;
+		}
+		//fin.close();
 		return;
 	}
 	if(!fin.is_open())
@@ -701,13 +631,8 @@ void Template :: Controller(char* file)
 		if(exit == -1)
 		{
 			if(ptr[1]=='~'){
-				if(isNorm){
 					Model(ptr[0]);
 					cout<<ptr+2<<endl;
-				}
-				else{ ErrorModel(ptr[0]);
-				cout<<ptr+3<<endl;
-				}
 			}
 			else cout<<"~"<<ptr<<endl;
 		}
