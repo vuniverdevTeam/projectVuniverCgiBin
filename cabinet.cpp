@@ -43,39 +43,54 @@ MYSQL_RES *res, *FSres;
 
 double rating;
 float erf(float t) {
-  MYSQL_ROW line;
-  MYSQL_RES *result;
-  char str[44];
-  float r;
-  sprintf(str, "SELECT ft FROM laplas WHERE t='%f'", t<0 ? (-t) : t);
-  mysql_query(connection, str);
-  result = mysql_store_result(connection);
-  mysql_num_rows(result);
-  line = mysql_fetch_row(result);
-  r = t<0 ? -atof(line[0]) : atof(line[0]);
-  mysql_free_result(result);
-  return r;
+	MYSQL_ROW line;
+	MYSQL_RES *result;
+	char str[44];
+	float r;
+	if(t>4) t=4;
+	else if(t<-4) t=-4;
+	sprintf(str, "SELECT ft FROM laplas WHERE t='%f'", t<0 ? (-t) : t);
+	mysql_query(connection, str);
+	result = mysql_store_result(connection);
+	mysql_num_rows(result);
+	line = mysql_fetch_row(result);
+	r = t<0 ? -atof(line[0]) : atof(line[0]);
+	mysql_free_result(result);
+	return r;
 }
 double Probability(int* markArr, double &D, double &M)
 {
-  double start, X;
-  M = 0, D = 0;
-  int	i, sum = 0;
+	double start, X;
+	M = 0, D = 0;
+	int	i;
+	
+	int newArr[4];
+	int length = 0;
+	for (i = 0; i < YEARS; ++i)
+	{
+		if (markArr[i] > 0)
+		{
+			newArr[length++] = markArr[i];
+		}
+	}
+	if(length == 1)
+		return (rating >= newArr[0]) ? 100 : 0;
+	else if (length == 0) return 0;
 
-  for (i = 0; i < YEARS; ++i) {
-    M += markArr[i];
-  }
-  M /= YEARS;
-  //
-  for (i = 0; i < YEARS; ++i) {
-    D += pow(markArr[i] - M, 2.0);
-  }
-  D /= YEARS - 1;
+	for (i = 0; i < length; ++i) {
+		M += newArr[i];
+	}
+	M /= length;
+	//
+	for (i = 0; i < length; ++i) {
+		D += pow(newArr[i] - M, 2.0);
+	}
+	D /= (length - 1);
 
-  D = sqrt(double(2.0) * D);
-  X = (erf((M - 100) / D) - erf((M - rating) / D)) * 50;
+	D = sqrt(double(2.0) * D);
+	X = (erf((double(M) - double(100)) / D) - erf((double(M) - double(rating)/**1.12*/) / D)) * 50;
 
-  return X;
+	return X;
 }
 
 char *ito(int value, char *dest)
@@ -227,7 +242,7 @@ short searchMarkFS(const char *f, const char *s)
   mysql_free_result(res); 
   //cout<<a<<" s<br/>"<<endl;
 
-  sprintf(query_ptr, "SELECT avg_contract_mark, avg_budget_mark FROM facult_spec WHERE s_id='%s' AND f_id='%s'", ito(a,tmp1), ito(b,tmp2));
+  sprintf(query_ptr, "SELECT avg_contract_mark, avg_budget_mark FROM facult_spec_abit WHERE s_id='%s' AND f_id='%s'", ito(a,tmp1), ito(b,tmp2));
   mysql_query(connection, query_ptr);
   res = mysql_store_result(connection);
   n = mysql_num_rows(res);
@@ -249,24 +264,25 @@ void Template :: Model2()
 	//cout<<en("m5");
   m1 = atof(en("m1")), m2 = atof(en("m2")), m3 = atof(en("m3")), m4 = atof(en("m4")), m5 = atof(en("m5"));
   if(m3 == 0)
-    k=0.25;
-	else if(m3 < 0) m3 = 0;
-  if(m4 == 0){
-    if(k == 0.25) k=0.333;
-    else k = 0.25;
-  }
-	else if(m4 < 0) m4 = 0;
-  rating = m1*k + m2*k + m3*k + m4*k + m5*k;
+		k=0.25;
+	if(m4 == 0){
+		if(k == 0.25) k=0.4;
+		else k = 0.25;
+	}
+  rating = k*m1 + k*m2 + k*m3 + k*m4;
+		if(k == float(0.4)) rating += (0.2*m5);
+		else rating += (k*m5);
   cout<<"{ F : '";
   sprintf(str, "SELECT u_id, f_fullname FROM faculties WHERE f_id='%s'", en("Fac"));
   mysql_query(connection, str);
   res = mysql_store_result(connection);
   row = mysql_fetch_row(res);
-  mysql_free_result(res);
+  
   cout<<row[1];
 
   cout<<"',U : '";
   sprintf(str, "SELECT u_fullname FROM university WHERE u_id='%s'", row[0]);
+mysql_free_result(res);
   mysql_query(connection, str);
   res = mysql_store_result(connection);
   row = mysql_fetch_row(res);
@@ -291,7 +307,6 @@ void Template :: Model2()
   cout.setf(ios::fixed);
   cout.precision(1);
   cout<<double(Probability(arr, D, M));
-
   cout<<"'}";
 }
 
