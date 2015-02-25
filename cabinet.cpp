@@ -307,6 +307,33 @@ mysql_free_result(res);
   cout.setf(ios::fixed);
   cout.precision(1);
   cout<<double(Probability(arr, D, M));
+//subjects check
+	char query_ptr[200];
+  short i, j;
+	bool check;
+    sprintf(query_ptr, "SELECT sub1_id, sub2_id, sub3_id, sub4_id, sub5_id, sub6_id, groups FROM coeff_abit WHERE s_id='%s' AND f_id='%s'", en("Spec"), en("Fac"));
+    mysql_query(connection, query_ptr);
+    res = mysql_store_result(connection);
+		check=true;
+    if(mysql_num_rows(res) != 0){    //record - continue checking
+      row = mysql_fetch_row(res);
+      for(i=1, j=0; true; i++){
+        if(row[6][i]!=row[6][i-1]){
+          //searching in group
+          for(;j<i;j++){
+              if(strcmp(en("sub1"), row[j]) == 0 ||
+                strcmp(en("sub2"), row[j]) == 0 ||
+                strcmp(en("sub3"), row[j]) == 0) break;		//match in group-continue with next group
+          }
+					if(j == i){check=false;j=i;break;}
+					else j=i;
+        }
+        if(row[6][i]==0 || i==6 || check == false) break;
+      }
+    }
+    mysql_free_result(res);
+    //end subjects check
+	cout<<"',check : '"<<check;
   cout<<"'}";
 }
 
