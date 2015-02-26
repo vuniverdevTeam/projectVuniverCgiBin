@@ -75,17 +75,29 @@ double Probability(int* markArr, double &D, double &M)
 	double start, X;
 	M = 0, D = 0;
 	int	i;
-	if(YEAR == 1)
-		return (rating == markArr[0]) ? 50 : (rating < markArr[0]) ? 0 : 100;
-	for (i = 0; i < YEAR; ++i) {
-		M += markArr[i];
+	
+	int newArr[4];
+	int length = 0;
+	for (i = 0; i < YEAR; ++i)
+	{
+		if (markArr[i] > 0)
+		{
+			newArr[length++] = markArr[i];
+		}
 	}
-	M /= YEAR;
+	if(length == 1)
+		return (rating >= newArr[0]) ? 100 : 0;
+	else if (length == 0) return 0;
+
+	for (i = 0; i < length; ++i) {
+		M += newArr[i];
+	}
+	M /= length;
 	//
-	for (i = 0; i < YEAR; ++i) {
-		D += pow(markArr[i] - M, 2.0);
+	for (i = 0; i < length; ++i) {
+		D += pow(newArr[i] - M, 2.0);
 	}
-	D /= (YEAR - 1);
+	D /= (length - 1);
 
 	D = sqrt(double(2.0) * D);
 	X = (erf((double(M) - double(100)) / D) - erf((double(M) - double(rating)/**1.12*/) / D)) * 50;
@@ -128,7 +140,7 @@ double Beta(double x, double y) {
 double b(int* arr, double rating)
 {
 	if(YEAR == 1)
-		return (rating == arr[0]) ? 50 : (rating < arr[0]) ? 0 : 100;
+		return (rating >= arr[0]) ? 100 : 0;
 	int length = 0;
 	int	i;
 	for (i = 0; i < YEAR; ++i)
@@ -236,11 +248,28 @@ class SQL
 private:
 	int query_state;
 public:
-	SQL(){mysql_query(connection, "SET NAMES utf8 COLLATE utf8_unicode_ci");}
+	SQL(){mysql_query(connection, "SET NAMES 'utf8' COLLATE 'utf8_unicode_ci'");}
 	short searchMarkUFS(const char *u, const char *f, const char *s, int *arr);
 	Prop *searchAllFS(int &n, const char *f = 0, const char *s = 0);
 	short searchMarkFS(const char *f, const char *s, int *arr);
 };
+class Template
+{
+protected:
+	char buff[1001], *ptr;
+	ifstream fin;
+	short err, errMark, errSub;
+	void Read();
+	void ReadPost();
+public:
+	entr en;
+	int View();
+	void Model(int dec);
+	void Controller(char* file);
+	friend class SQL;
+};
+Template obj;
+
 
 short SQL :: searchMarkUFS(const char *u, const char *f, const char *s, int *arr)
 {
@@ -295,6 +324,7 @@ short SQL :: searchMarkUFS(const char *u, const char *f, const char *s, int *arr
 		return -1;
 }
 
+char subj1[3]={0},subj2[3]={0},subj3[3]={0};
 short SQL :: searchMarkFS(const char *f, const char *s, int *arr)
 {
 	int i;
@@ -322,6 +352,9 @@ Prop *SQL :: searchAllFS(int &n, const char *f, const char *s){
 	n = 0;
 	double M, D;
 	int* marks = new int[2*4];
+	char query_ptr[200];
+  short i, j, k;
+	bool check;
 	mysql_query(connection, "SELECT f_id, s_id FROM coeff_abit");
 	Prop *arr = new Prop[10000];
 	FSres = mysql_store_result(connection);
@@ -334,6 +367,36 @@ Prop *SQL :: searchAllFS(int &n, const char *f, const char *s){
 			n--;
 			continue;
 		}
+//subjects check
+    sprintf(query_ptr, "SELECT sub1_id, sub2_id, sub3_id, sub4_id, sub5_id, sub6_id, groups FROM coeff_abit WHERE s_id='%s' AND f_id='%s'", FSrow[1], FSrow[0]);
+    mysql_query(connection, query_ptr);
+    res = mysql_store_result(connection);
+    if(mysql_num_rows(res) != 0){    //record - continue checking
+			check=true;
+      row = mysql_fetch_row(res);
+      for(i=1, j=0; true; i++){
+        if(row[6][i]!=row[6][i-1]){
+          //searching in group
+          for(;j<i;j++){
+            //for(k=0;k<=j;k++){
+              if(strcmp(obj.en("sub2"), row[j]) == 0 ||
+                strcmp(obj.en("sub3"), row[j]) == 0 ||
+                strcmp(obj.en("sub4"), row[j]) == 0) break;
+            //}
+            //if(k > j){break;}   //match in group-continue with next group
+          }
+					if(j == i){check=false;j=i;break;}
+					else j=i;
+        }
+        if(row[6][i]==0 || i==6 || check == false) break;
+      }
+      if(check == false){
+        mysql_free_result(res);
+        n--;continue;
+      }
+    }
+    mysql_free_result(res);
+    //end subjects check
 		arr[n].f=strdup(FSrow[0]);
 		arr[n].s=strdup(FSrow[1]);
 		searchMarkFS(FSrow[0], FSrow[1], marks);
@@ -345,21 +408,6 @@ Prop *SQL :: searchAllFS(int &n, const char *f, const char *s){
 	return arr;
 }
 
-class Template
-{
-protected:
-	char buff[1001], *ptr;
-	ifstream fin;
-	entr en;
-	short err, errMark, errSub;
-	void Read();
-	void ReadPost();
-public:
-	int View();
-	void Model(int dec);
-	void Controller(char* file);
-	friend class SQL;
-};
 
 void Template :: Read()
 {
@@ -474,12 +522,38 @@ void Template :: Model(int dec)
 		mysql_free_result(res);
 		cout<<row[0];
 		break;
+	case '1':
+		cout.setf(ios::fixed);
+		cout.precision(1);
+		cout<<"<input id=\"coef1\" type=\"text\" value=\""<<k<<"\"/>";
+		break;
+	case '2':
+		cout.setf(ios::fixed);
+		cout.precision(1);
+		cout<<"<input id=\"coef2\" type=\"text\" value=\""<<k<<"\"/>";
+		break;
+	case '3':
+		cout.setf(ios::fixed);
+		cout.precision(1);
+		cout<<"<input id=\"coef3\" type=\"text\" value=\""<<k<<"\"/>";
+		break;
+	case '4':
+		cout.setf(ios::fixed);
+		cout.precision(1);
+		cout<<"<input id=\"coef4\" type=\"text\" value=\""<<k<<"\"/>";
+		break;
+	case '5':
+		cout.setf(ios::fixed);
+		cout.precision(1);
+		if (k != float(0.4)) cout<<"<input id=\"coef5\" type=\"text\" value=\""<<k<<"\"/>";	
+		else cout<<"<input id=\"coef5\" type=\"text\" value=\"0.2\"/>";;
+		break;
 	case 'M' :
 		cout.setf(ios::fixed);
 		cout.precision(1);
 		cout<<k<<"*"<<m1<<"+"<<k<<"*"<<m2;
-		if(m3 != 0) cout<<"+"<<k<<"*"<<m3;
-		if(m4 != 0) cout<<"+"<<k<<"*"<<m4;
+		cout<<"+"<<k<<"*"<<m3;
+		cout<<"+"<<k<<"*"<<m4;
 		if(k != float(0.4))cout<<"+"<<k<<"*"<<m5<<"=";	
 		else cout<<"+"<<"0.2*"<<m5<<"=";	
 		cout<<rating;
@@ -524,7 +598,15 @@ void Template :: Model(int dec)
 		const char *r=en("reg"), *c=en("city"), *s=en("Spec"), *f=en("Fac"), *u=en("Univer");
 		Prop *arr;
 		mysql_free_result(res);
-		arr=obj.searchAllFS(n, f, s);
+
+		//subjs = new char*[3];
+    //if(*en("sub2")!='\0' && en("sub2")) subj1 = strcpy(;
+    //subj2 = new char[strlen(en("sub3"))];
+    //subj3 = new char[strlen(en("sub4"))];
+      arr=obj.searchAllFS(n, f, s);
+    //free(subj1), free(subj2), free(subj3);
+    //delete[]subjs;		
+		
 		for(i = 0; i < n; i++){
 
 			sprintf(str, "SELECT u_id FROM faculties WHERE f_id='%s'", arr[i].f);
@@ -535,7 +617,7 @@ void Template :: Model(int dec)
 
 			if(*u != 0 && strcmp(u, row[0]) != 0) continue;
 
-			sprintf(str, "SELECT u_fullname, reg_id, city_id, rating FROM university WHERE u_id='%s'", row[0]);
+			sprintf(str, "SELECT u_fullname, reg_id, city_id, u_id, rating FROM university WHERE u_id='%s'", row[0]);
 			mysql_query(connection, str);
 			res = mysql_store_result(connection);
 			row = mysql_fetch_row(res);
@@ -548,21 +630,21 @@ void Template :: Model(int dec)
 			cout.setf(ios::fixed);
 			cout.precision(1);
 			cout<<"<td class=\"budg\">"<<arr[i].prop2<<"%</td> <td class=\"contr\">"<<arr[i].prop1<<"%</td>";
-
-			cout<<"<td>"<<row[0];
+//http://alex.inet-tech.org.ua/cgi-bin/inpNew.cpp.o?mark5=166&mark1=155&sub2=5&mark2=166&sub3=7&mark3=177&sub4=&mark4=&reg=8&city=8&Univer=928&Fac=631&Spec=45
+			cout<<"<td onclick=\"location='http://alex.inet-tech.org.ua/cgi-bin/inpNew.cpp.o?mark5="<<en("mark5")<<"&mark1="<<en("mark1")<<"&sub2="<<en("sub2")<<"&mark2="<<en("mark2")<<"&sub3="<<en("sub3")<<"&mark3="<<en("mark3")<<"&sub4="<<en("sub4")<<"&mark4="<<en("mark4")<<"&reg="<<row[1]<<"&city="<<row[2]<<"&Univer="<<row[3]<<"&Fac="<<arr[i].f<<"&Spec="<<arr[i].s<<"'\">"<<row[0];
 
 			sprintf(str, "SELECT f_fullname FROM faculties WHERE f_id='%s'", arr[i].f);
 			mysql_query(connection, str);
 			res = mysql_store_result(connection);
 			row = mysql_fetch_row(res);
-			cout<<"</td><td>"<<row[0];
+			cout<<"<br/>"<<row[0];
 			mysql_free_result(res);
 
 			sprintf(str, "SELECT s_name FROM specialities WHERE s_id='%s'", arr[i].s);
 			mysql_query(connection, str);
 			res = mysql_store_result(connection);
 			row = mysql_fetch_row(res);
-			cout<<"</td><td>"<<row[0];
+			cout<<"<br/>"<<row[0];
 			mysql_free_result(res);
 
 			cout<<"</td>";
@@ -651,8 +733,6 @@ void Template :: Controller(char* file)
 		}
 	}
 }
-
-Template obj;
 int main()
 {
 	mysql.reconnect = true;
